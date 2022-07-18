@@ -12,7 +12,7 @@ import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
 import { SqliteConnectionService } from 'src/sqlite-connection/sqlite-connection.service';
 
-@Controller('persons')
+@Controller('/persons')
 export class PersonsController {
   constructor(
     private readonly personsService: PersonsService,
@@ -20,27 +20,28 @@ export class PersonsController {
   ) {}
 
   @Post()
-  async create(@Body() body) {
-    return await this.sqliteConnectionService.create(body);
+  async create(@Body() createPersonDto: CreatePersonDto) {
+    return await this.sqliteConnectionService.create(createPersonDto);
   }
 
   @Get()
   findAll() {
-    return this.personsService.findAll();
+    return this.sqliteConnectionService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.personsService.findOne(+id);
+    console.log(id);
+    return this.sqliteConnectionService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePersonDto: UpdatePersonDto) {
-    return this.personsService.update(+id, updatePersonDto);
+  @Patch()
+  update(@Param('id') id: string, @Body() createPersonDto: CreatePersonDto) {
+    return this.sqliteConnectionService.update(id, createPersonDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.personsService.remove(+id);
+    return this.sqliteConnectionService.remove(id);
   }
 }
