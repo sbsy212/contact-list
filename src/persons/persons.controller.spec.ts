@@ -1,16 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { SqliteConnectionService } from './../../src/sqlite-connection/sqlite-connection.service';
 import { PersonsController } from './persons.controller';
-import { PersonsService } from './persons.service';
 
 describe('PersonsController', () => {
   let controller: PersonsController;
+  let sqliteConnectionServiceMock: SqliteConnectionService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PersonsController],
-      providers: [PersonsService],
+      providers: [
+        {
+          provide: SqliteConnectionService,
+          useClass: SqliteConnectionService,
+        },
+      ],
     }).compile();
 
+    sqliteConnectionServiceMock = module.get<SqliteConnectionService>(
+      SqliteConnectionService,
+    );
     controller = module.get<PersonsController>(PersonsController);
   });
 

@@ -1,4 +1,4 @@
-import { CreatePersonDto } from 'src/persons/dto/create-person.dto';
+import { CreatePersonDto } from './../../persons/dto/create-person.dto';
 import { DataTypes, Model } from 'sequelize';
 import db from '../config/config.database';
 

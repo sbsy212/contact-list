@@ -8,7 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { CreatePersonDto } from './dto/create-person.dto';
-import { SqliteConnectionService } from 'src/sqlite-connection/sqlite-connection.service';
+import { SqliteConnectionService } from './../sqlite-connection/sqlite-connection.service';
 
 @Controller('/persons')
 export class PersonsController {
@@ -18,7 +18,18 @@ export class PersonsController {
 
   @Post()
   async create(@Body() createPersonDto: CreatePersonDto) {
-    return await this.sqliteConnectionService.createPerson(createPersonDto);
+    const regexp = new RegExp(`^(.+)@(.+)$`);
+    if (!regexp.test(createPersonDto.emailAddress)) {
+      console.log('regex failed');
+      return await {
+        msg: 'the email address is wrong',
+        status: 400,
+        route: '/persons',
+      };
+    } else {
+      console.log('regex didnt fail');
+      return await this.sqliteConnectionService.createPerson(createPersonDto);
+    }
   }
 
   @Get()
@@ -34,7 +45,18 @@ export class PersonsController {
 
   @Patch()
   update(@Param('id') id: string, @Body() createPersonDto: CreatePersonDto) {
-    return this.sqliteConnectionService.updatePerson(id, createPersonDto);
+    const regexp = new RegExp(`^(.+)@(.+)$`);
+    if (!regexp.test(createPersonDto.emailAddress)) {
+      console.log('regex failed');
+      return {
+        msg: 'the email address is wrong',
+        status: 400,
+        route: '/persons',
+      };
+    } else {
+      console.log('regex didnt fail');
+      return this.sqliteConnectionService.updatePerson(id, createPersonDto);
+    }
   }
 
   @Delete(':id')

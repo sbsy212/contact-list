@@ -1,4 +1,4 @@
-import { CreateAddressDto } from 'src/addresses/dto/create-address.dto';
+import { CreateAddressDto } from './../../addresses/dto/create-address.dto';
 import { DataTypes, Model } from 'sequelize';
 import db from '../config/config.database';
 

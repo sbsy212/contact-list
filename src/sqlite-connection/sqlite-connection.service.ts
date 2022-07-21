@@ -1,20 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import db from './config/config.database';
 import { v4 as uuidv4 } from 'uuid';
 import { PersonsInstance } from './dto/persons.dto';
 import { CreatePersonDto } from './../../src/persons/dto/create-person.dto';
-import { CreateAddressDto } from 'src/addresses/dto/create-address.dto';
+import { CreateAddressDto } from './../../src/addresses/dto/create-address.dto';
 import { AddressesInstance } from './dto/addresses.dto';
+import { CONFIG_OPTIONS, DB } from './sqlite-connection.module';
 
 @Injectable()
 export class SqliteConnectionService {
+  // constructor(@Inject(CONFIG_OPTIONS) db: DB) {
+  //   db.db;
+  //   const filePath = `${process.env.NODE_ENV || 'development'}.env`;
+  //   const envFile = path.resolve(__dirname, '../../', options.folder, filePath);
+  //   this.envConfig = db.db;
+  // }
+
   public init() {
     db.sync().then(() => {
       console.log('connect to db');
     });
   }
 
-  public async createPerson(body: CreatePersonDto) {
+  public async createPerson(
+    body: CreatePersonDto,
+  ): Promise<
+    | { msg: string }
+    | { person: PersonsInstance; msg: string }
+    | { msg: string; status: number; route: string }
+  > {
     const id = uuidv4();
     try {
       const person = await PersonsInstance.create({ ...body, id });
@@ -25,7 +39,9 @@ export class SqliteConnectionService {
     }
   }
 
-  public async findAllPersons() {
+  public async findAllPersons(): Promise<
+    PersonsInstance[] | { msg: string; status: number; route: string }
+  > {
     try {
       const persons = await PersonsInstance.findAll({
         where: {},
@@ -36,7 +52,9 @@ export class SqliteConnectionService {
     }
   }
 
-  public async findOnePerson(id: string) {
+  public async findOnePerson(
+    id: string,
+  ): Promise<PersonsInstance | { msg: string; status: number; route: string }> {
     try {
       const person = await PersonsInstance.findOne({ where: { id } });
       return person;
@@ -45,7 +63,14 @@ export class SqliteConnectionService {
     }
   }
 
-  public async updatePerson(id: string, body: CreatePersonDto) {
+  public async updatePerson(
+    id: string,
+    body: CreatePersonDto,
+  ): Promise<
+    | { msg: string }
+    | { person: PersonsInstance }
+    | { msg: string; status: number; route: string }
+  > {
     try {
       const person = await PersonsInstance.findOne({ where: { id } });
 
@@ -60,19 +85,31 @@ export class SqliteConnectionService {
       return { person: updatedPerson };
     } catch (e) {
       return {
-        msg: 'fail to read',
+        msg: 'fail to update',
         status: 500,
         route: '/update/:id',
       };
     }
   }
 
-  public async removePerson(id: string) {
+  public async removePerson(
+    id: string,
+  ): Promise<
+    | { msg: string }
+    | { person: void }
+    | { msg: string; status: number; route: string }
+  > {
     try {
       const person = await PersonsInstance.findOne({ where: { id } });
 
       if (!person) {
         return { msg: 'Can not find existing person' };
+      }
+
+      const address = await AddressesInstance.findOne({ where: { id } });
+
+      if (address) {
+        await address.destroy;
       }
 
       const deletedPerson = await person.destroy();
@@ -86,7 +123,14 @@ export class SqliteConnectionService {
     }
   }
 
-  public async createAddress(id: string, body: CreateAddressDto) {
+  public async createAddress(
+    id: string,
+    body: CreateAddressDto,
+  ): Promise<
+    | { msg: string }
+    | { address: AddressesInstance; msg: string }
+    | { msg: string; status: number; route: string }
+  > {
     try {
       const person = await PersonsInstance.findOne({ where: { id } });
       if (!person) {
@@ -101,7 +145,9 @@ export class SqliteConnectionService {
     }
   }
 
-  public async findAllAddresses() {
+  public async findAllAddresses(): Promise<
+    AddressesInstance[] | { msg: string; status: number; route: string }
+  > {
     try {
       const addresses = await AddressesInstance.findAll({
         where: {},
@@ -112,7 +158,11 @@ export class SqliteConnectionService {
     }
   }
 
-  public async findOneAddress(id: string) {
+  public async findOneAddress(
+    id: string,
+  ): Promise<
+    AddressesInstance | { msg: string; status: number; route: string }
+  > {
     try {
       const address = await AddressesInstance.findOne({ where: { id } });
       return address;
@@ -121,7 +171,14 @@ export class SqliteConnectionService {
     }
   }
 
-  public async updateAddress(id: string, body: CreateAddressDto) {
+  public async updateAddress(
+    id: string,
+    body: CreateAddressDto,
+  ): Promise<
+    | { msg: string }
+    | { address: AddressesInstance }
+    | { msg: string; status: number; route: string }
+  > {
     try {
       const address = await AddressesInstance.findOne({ where: { id } });
 
@@ -143,7 +200,13 @@ export class SqliteConnectionService {
     }
   }
 
-  public async removeAddress(id: string) {
+  public async removeAddress(
+    id: string,
+  ): Promise<
+    | { msg: string }
+    | { address: void }
+    | { msg: string; status: number; route: string }
+  > {
     try {
       const address = await AddressesInstance.findOne({ where: { id } });
 
